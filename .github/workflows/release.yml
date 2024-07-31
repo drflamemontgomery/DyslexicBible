@@ -21,7 +21,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
-      - uses: ./zig.yml
+      - uses: ./.github/workflows/zig.yml
         with:
           version: 0.13.0-dev.351+64ef45eb0
 
@@ -37,7 +37,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
-      - uses: ./zig.yml
+      - uses: ./.github/workflows/zig.yml
         with:
           version: 0.13.0-dev.351+64ef45eb0
 
