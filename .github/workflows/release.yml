@@ -14,7 +14,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   install-zig:
-    uses: ./.github/workflows/zig/action.yml
+    uses: ./.github/workflows/zig.yml
     with:
       version: 0.13.0-dev.351+64ef45eb0
     
@@ -24,6 +24,9 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
+      - uses: ./.github/zig
+        with:
+          version: 0.13.0-dev.351+64ef45eb0
 
 
       - name: Build Project Tests
@@ -38,7 +41,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
-      - uses: ./.github/workflows/zig
+      - uses: ./.github/zig
         with:
           version: 0.13.0-dev.351+64ef45eb0
 
