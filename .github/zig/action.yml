@@ -1,25 +1,13 @@
 name: Zig Install Workflow
+inputs:
+  version:
+    default: 'master'
+    required: true
+    type: string
 
-on:
-  workflow_dispatch:
-    inputs:
-      version:
-        default: 'master'
-        required: true
-        type: string
-  workflow_call:
-    inputs:
-      version:
-        default: 'master'
-        required: true
-        type: string
-
-jobs:
-  install:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup Zig
-        run: |
-          curl -L https://github.com/marler8997/zigup/releases/download/v2024_05_05/zigup-x86_64-linux.tar.gz | tar xz
-          ./zigup ${{ inputs.version }}
-          zig build --fetch
+runs:
+  steps:
+    run: |
+      curl -L https://github.com/marler8997/zigup/releases/download/v2024_05_05/zigup-x86_64-linux.tar.gz | tar xz
+      ./zigup ${{ inputs.version }}
+      zig build --fetch
