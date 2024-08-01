@@ -45,4 +45,4 @@ jobs:
       - name: Build Project
         run: |
           zig build --fetch
-          zig build run
+          zig build
