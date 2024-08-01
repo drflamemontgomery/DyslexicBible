@@ -15,5 +15,5 @@ runs:
         curl -L https://github.com/marler8997/zigup/releases/download/v2024_05_05/zigup-x86_64-linux.tar.gz | tar xz
         echo "Install"
         sudo install zigup /usr/bin
-        zigup ${{ inputs.version }}
+        sudo zigup ${{ inputs.version }} --install-dir /usr/bin/
       shell: bash
