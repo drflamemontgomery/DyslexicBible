@@ -5,7 +5,7 @@ on:
     inputs:
       version:
         default: 'master'
-        required: true
+        required: false
         type: string
 
 jobs:
@@ -16,6 +16,7 @@ jobs:
     
       - name: Setup Zig
         run: |
+          echo ${{ inputs }}
           curl -L https://github.com/marler8997/zigup/releases/download/v2024_05_05/zigup-x86_64-linux.tar.gz | tar xz
           ./zigup ${{ inputs.version }}
           zig build --fetch
