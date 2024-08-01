@@ -11,7 +11,6 @@ runs:
     - name: Install Zig
       run: |
         curl -L https://github.com/marler8997/zigup/releases/download/v2024_05_05/zigup-x86_64-linux.tar.gz | tar xz
-        ./zigup ${{ inputs.version }}
-        sudo mv zig /usr/bin/
+        sudo ./zigup ${{ inputs.version }}
         zig build --fetch
       shell: bash
