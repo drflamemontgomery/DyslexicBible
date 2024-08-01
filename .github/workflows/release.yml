@@ -14,7 +14,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   install-zig:
-    uses: ./.github/workflows/zig
+    uses: ./.github/workflows/zig/action.yml
     with:
       version: 0.13.0-dev.351+64ef45eb0
     
