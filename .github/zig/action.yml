@@ -8,14 +8,10 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Setup Path
+    - name: Install Zig
       run: |
         mkdir -p .local/zig
         export PATH="$PATH:$(pwd)/.local/zig"
-      shell: bash
-
-    - name: Install Zig
-      run: |
         curl -L https://github.com/marler8997/zigup/releases/download/v2024_05_05/zigup-x86_64-linux.tar.gz | tar xz
         echo "Install"
         sudo ./zigup ${{ inputs.version }} --install-dir /usr/bin --path-link $(pwd)/.local/zig/zig
