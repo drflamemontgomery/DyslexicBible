@@ -1,6 +1,5 @@
 const std = @import("std");
-const cairo = @import("abi").cairo;
-const freetype = @import("abi").freetype;
+const abi = @import("abi");
 const ui = @import("ui/ui.zig");
 const ft = @import("ft.zig");
 
@@ -8,7 +7,7 @@ const ft = @import("ft.zig");
 pub const ImageSurface = struct {
     allocator: std.mem.Allocator,
     /// Internal Cairo Surface Handle
-    surface: *cairo.Surface,
+    surface: *abi.cairo_surface_t,
     data: []u32,
     width: u32,
     height: u32,
@@ -17,7 +16,7 @@ pub const ImageSurface = struct {
         const data = try allocator.alloc(u32, @intCast(width * height));
         errdefer allocator.free(data);
 
-        const surface = cairo.imageSurfaceCreateForData(@ptrCast(&data[0]), cairo.FORMAT_ARGB32, @intCast(width), @intCast(height), @intCast(4 * width)) orelse return Err.FAILED_TO_CREATE_SURFACE;
+        const surface = abi.cairo_image_surface_create_for_data(@ptrCast(&data[0]), abi.CAIRO_FORMAT_ARGB32, @intCast(width), @intCast(height), @intCast(4 * width)) orelse return Err.FAILED_TO_CREATE_SURFACE;
         return Self{
             .allocator = allocator,
             .surface = surface,
@@ -38,11 +37,11 @@ pub const ImageSurface = struct {
         self.data = try self.allocator.alloc(u32, @intCast(width * height));
         errdefer self.allocator.free(self.data);
 
-        self.surface = cairo.imageSurfaceCreateForData(@ptrCast(&self.data[0]), cairo.FORMAT_ARGB32, @intCast(width), @intCast(height), @intCast(4 * width)) orelse return Err.FAILED_TO_CREATE_SURFACE;
+        self.surface = abi.cairo_image_surface_create_for_data(@ptrCast(&self.data[0]), abi.CAIRO_FORMAT_ARGB32, @intCast(width), @intCast(height), @intCast(4 * width)) orelse return Err.FAILED_TO_CREATE_SURFACE;
     }
 
     pub fn destroy(self: Self) void {
-        // data is allocated by the cairo library using malloc
+        // data is allocated by the abi library using malloc
         std.c.free(self.surface);
         self.allocator.free(self.data);
     }
@@ -58,7 +57,7 @@ pub const Graphics = struct {
     var FontLib: ?ft.Library = null;
 
     allocator: std.mem.Allocator,
-    ctx: *cairo.Context,
+    ctx: *abi.cairo_t,
     _surface: []ImageSurface,
     surface: *ImageSurface,
 
@@ -67,7 +66,7 @@ pub const Graphics = struct {
         const surface = &_surface[0];
         surface.* = try ImageSurface.new(allocator, width, height);
 
-        const ctx = cairo.create(surface.surface) orelse return Err.FAILED_TO_CREATE_CAIRO_CONTEXT;
+        const ctx = abi.cairo_create(surface.surface) orelse return Err.FAILED_TO_CREATE_CAIRO_CONTEXT;
 
         return Self{
             .allocator = allocator,
@@ -78,22 +77,22 @@ pub const Graphics = struct {
     }
 
     pub fn save(self: Self) void {
-        cairo.save(self.ctx);
+        abi.cairo_save(self.ctx);
     }
 
     pub fn restore(self: Self) void {
-        cairo.restore(self.ctx);
+        abi.cairo_restore(self.ctx);
     }
 
     pub fn resize(self: *Self, width: u32, height: u32) Err!void {
         if (width == 0 or height == 0) return;
-        cairo.destroy(self.ctx);
+        abi.cairo_destroy(self.ctx);
         self.surface.resize(width, height) catch return Err.FAILED_TO_RESIZE_SURFACE;
-        self.ctx = cairo.create(self.surface.surface) orelse return Err.FAILED_TO_CREATE_CAIRO_CONTEXT;
+        self.ctx = abi.cairo_create(self.surface.surface) orelse return Err.FAILED_TO_CREATE_CAIRO_CONTEXT;
     }
 
     pub fn destroy(self: Self) void {
-        cairo.destroy(self.ctx);
+        abi.cairo_destroy(self.ctx);
         self.surface.destroy();
         self.allocator.free(self._surface);
     }
@@ -104,41 +103,41 @@ pub const Graphics = struct {
     }
 
     pub fn setSourceRGB(self: Self, r: f32, g: f32, b: f32) void {
-        cairo.setSourceRGB(self.ctx, r, g, b);
+        abi.cairo_set_source_rgb(self.ctx, r, g, b);
     }
 
     pub fn rectangle(self: Self, x: f32, y: f32, width: f32, height: f32) void {
-        cairo.rectangle(self.ctx, x, y, width, height);
+        abi.cairo_rectangle(self.ctx, x, y, width, height);
     }
 
     pub fn fill(self: Self) void {
-        cairo.fill(self.ctx);
+        abi.cairo_fill(self.ctx);
     }
 
     pub fn setFontFace(self: Self, font_face: *ft.Face) void {
-        cairo.setFontFace(self.ctx, @ptrCast(font_face));
+        abi.cairo_set_font_face(self.ctx, @ptrCast(font_face));
     }
 
-    pub fn showGlyphs(self: Self, glyphs: []cairo.Glyph) void {
-        cairo.showGlyphs(self.ctx, @ptrCast(glyphs), @intCast(glyphs.len));
+    pub fn showGlyphs(self: Self, glyphs: []abi.cairo_glyph_t) void {
+        abi.cairo_show_glyphs(self.ctx, @ptrCast(glyphs), @intCast(glyphs.len));
     }
 
-    pub fn showGlyphsAt(self: Self, x: f64, y: f64, glyphs: []cairo.Glyph) void {
-        var font_matrix: cairo.Matrix = undefined;
-        cairo.getFontMatrix(self.ctx, &font_matrix);
+    pub fn showGlyphsAt(self: Self, x: f64, y: f64, glyphs: []abi.cairo_glyph_t) void {
+        var font_matrix: abi.cairo_matrix_t = undefined;
+        abi.cairo_get_font_matrix(self.ctx, &font_matrix);
 
-        var translate_matrix: cairo.Matrix = undefined;
-        cairo.matrixInitTranslate(&translate_matrix, x, y);
+        var translate_matrix: abi.cairo_matrix_t = undefined;
+        abi.cairo_matrix_init_translate(&translate_matrix, x, y);
 
-        var result: cairo.Matrix = undefined;
-        cairo.matrixMultiply(&result, &font_matrix, &translate_matrix);
+        var result: abi.cairo_matrix_t = undefined;
+        abi.cairo_matrix_multiply(&result, &font_matrix, &translate_matrix);
 
-        cairo.setFontMatrix(self.ctx, &result);
+        abi.cairo_set_font_matrix(self.ctx, &result);
         self.showGlyphs(glyphs);
     }
 
     pub fn setScaledFont(self: Self, scaled_font: ScaledFont) void {
-        cairo.setScaledFont(self.ctx, scaled_font.scaled_font);
+        abi.cairo_set_scaled_font(self.ctx, scaled_font.scaled_font);
     }
 
     const Self = @This();
@@ -151,7 +150,7 @@ pub const Graphics = struct {
 pub const ScaledFont = struct {
     var fonts: ScaledFontHashMap = undefined;
 
-    scaled_font: *cairo.ScaledFont,
+    scaled_font: *abi.cairo_scaled_font_t,
 
     pub fn init(allocator: std.mem.Allocator) void {
         fonts = ScaledFontHashMap.init(allocator);
@@ -169,11 +168,11 @@ pub const ScaledFont = struct {
         }
 
         const face = try ft.Library.current.?.newFace(font, 0);
-        const ft_font = cairo.ftFontFaceCreateForFTFace(face, 0).?;
-        var key: cairo.UserDataKey = undefined;
-        if (cairo.fontFaceSetUserData(ft_font, @ptrCast(&key), face, @ptrCast(&freetype.FT_Done_Face)) != 0) {
-            cairo.fontFaceDestroy(ft_font);
-            _ = freetype.FT_Done_Face(face);
+        const ft_font = abi.cairo_ft_font_face_create_for_ft_face(face, 0).?;
+        var key: abi.cairo_user_data_key_t = undefined;
+        if (abi.cairo_font_face_set_user_data(ft_font, @ptrCast(&key), face, @ptrCast(&abi.FT_Done_Face)) != 0) {
+            abi.cairo_font_face_destroy(ft_font);
+            _ = abi.FT_Done_Face(face);
             return Err.FAILED_TO_CREATE_FACE;
         }
         const scaled_font = try Self.new(ft_font, .{ .size = size });
@@ -181,48 +180,48 @@ pub const ScaledFont = struct {
         return scaled_font;
     }
 
-    pub fn new(font: ?*cairo.FontFace, options: FontOptions) !Self {
-        var font_matrix: cairo.Matrix = undefined;
-        var ctm: cairo.Matrix = undefined;
+    pub fn new(font: ?*abi.cairo_font_face_t, options: FontOptions) !Self {
+        var font_matrix: abi.cairo_matrix_t = undefined;
+        var ctm: abi.cairo_matrix_t = undefined;
 
-        const font_options: *cairo.FontOptions = cairo.fontOptionsCreate() orelse return Err.FAILED_TO_CREATE_SCALED_FONT;
-        defer cairo.fontOptionsDestroy(font_options);
+        const font_options: *abi.cairo_font_options_t = abi.cairo_font_options_create() orelse return Err.FAILED_TO_CREATE_SCALED_FONT;
+        defer abi.cairo_font_options_destroy(font_options);
 
-        cairo.matrixInitScale(&font_matrix, @floatCast(options.size), @floatCast(options.size));
-        cairo.matrixInitIdentity(&ctm);
+        abi.cairo_matrix_init_scale(&font_matrix, @floatCast(options.size), @floatCast(options.size));
+        abi.cairo_matrix_init_identity(&ctm);
 
-        const scaled_font = cairo.scaledFontCreate(font, &font_matrix, &ctm, font_options) orelse return Err.FAILED_TO_CREATE_SCALED_FONT;
+        const scaled_font = abi.cairo_scaled_font_create(font, &font_matrix, &ctm, font_options) orelse return Err.FAILED_TO_CREATE_SCALED_FONT;
 
         return .{
             .scaled_font = scaled_font,
         };
     }
 
-    pub fn textToGlyphs(self: Self, x: f64, y: f64, str: []const u8, glyphs: []cairo.Glyph) !usize {
-        var _glyphs: *cairo.Glyph = &glyphs[0];
+    pub fn textToGlyphs(self: Self, x: f64, y: f64, str: []const u8, glyphs: []abi.cairo_glyph_t) !usize {
+        var _glyphs: *abi.cairo_glyph_t = &glyphs[0];
         var num_of_glyphs: c_int = @intCast(glyphs.len);
 
-        if (cairo.scaledFontTextToGlyphs(self.scaled_font, @floatCast(x), @floatCast(y), @ptrCast(&str[0]), @intCast(str.len), @ptrCast(&_glyphs), &num_of_glyphs, @ptrFromInt(0), @ptrFromInt(0), @ptrFromInt(0)) != cairo.STATUS_SUCCESS) {
+        if (abi.cairo_scaled_font_text_to_glyphs(self.scaled_font, @floatCast(x), @floatCast(y), @ptrCast(&str[0]), @intCast(str.len), @ptrCast(&_glyphs), &num_of_glyphs, @ptrFromInt(0), @ptrFromInt(0), @ptrFromInt(0)) != abi.CAIRO_STATUS_SUCCESS) {
             return Err.FAILED_TO_CONVERT_TO_GLYPHS;
         }
 
-        // if num_of_glyphs increased then cairo allocated its own array
+        // if num_of_glyphs increased then abi allocated its own array
         if (num_of_glyphs > @as(c_int, @intCast(glyphs.len))) {
-            cairo.glyphFree(@ptrCast(_glyphs));
+            abi.cairo_glyph_free(@ptrCast(_glyphs));
             return Err.FAILED_TO_CONVERT_TO_GLYPHS;
         }
 
         return @intCast(num_of_glyphs);
     }
 
-    pub fn getTextExtents(self: Self, text: []const u8) cairo.TextExtents {
-        var extents: cairo.TextExtents = undefined;
-        cairo.scaledFontTextExtents(self.scaled_font, @ptrCast(text), @ptrCast(&extents));
+    pub fn getTextExtents(self: Self, text: []const u8) abi.cairo_text_extents_t {
+        var extents: abi.cairo_text_extents_t = undefined;
+        abi.cairo_scaled_font_text_extents(self.scaled_font, @ptrCast(text), @ptrCast(&extents));
         return extents;
     }
 
     pub fn destroy(self: Self) void {
-        cairo.scaledFontDestroy(self.scaled_font);
+        abi.cairo_scaled_font_destroy(self.scaled_font);
     }
 
     const Self = @This();
@@ -236,7 +235,7 @@ pub const ScaledFont = struct {
         FAILED_TO_CREATE_FACE,
     };
     const ScaledFontRef = struct {
-        ref: *cairo.ScaledFont,
+        ref: *abi.cairo_scaled_font_t,
     };
 
     const ScaledFontRefContext = struct {
@@ -259,7 +258,7 @@ pub const ScaledFont = struct {
 
 pub const GlyphCache = struct {
     allocator: std.mem.Allocator,
-    glyphs: []cairo.Glyph,
+    glyphs: []abi.cairo_glyph_t,
     utf8_text: []const u8,
     font: []const u8,
     size: f64,
@@ -269,7 +268,7 @@ pub const GlyphCache = struct {
     pub fn new(allocator: std.mem.Allocator, utf8_text: []const u8, font: []const u8, size: f64) !Self {
         const scaled_font = try ScaledFont.get(size, font);
 
-        const glyphs: []cairo.Glyph = try allocator.alloc(cairo.Glyph, utf8_text.len);
+        const glyphs: []abi.cairo_glyph_t = try allocator.alloc(abi.cairo_glyph_t, utf8_text.len);
         errdefer allocator.free(glyphs);
 
         _ = try scaled_font.textToGlyphs(0, 0, utf8_text, glyphs);

@@ -30,12 +30,8 @@ pub fn build(b: *std.Build) void {
     exe.linkSystemLibrary("freetype");
     exe.linkLibC();
 
-    //exe.root_module.addAnonymousImport("cairo", .{
-    //   .root_source_file = b.path("lib/cairo.zig"),
-    //});
-
     const abi_module = b.createModule(.{
-        .root_source_file = b.path("lib/lib.zig"),
+        .root_source_file = b.path("lib/c_abi.zig"),
     });
 
     exe.root_module.addImport("abi", abi_module);
@@ -89,10 +85,6 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/tests.zig"),
         .target = target,
         .optimize = optimize,
-    });
-
-    exe_unit_tests.root_module.addAnonymousImport("cairo", .{
-        .root_source_file = b.path("lib/cairo.zig"),
     });
 
     exe_unit_tests.root_module.addImport("abi", abi_module);
