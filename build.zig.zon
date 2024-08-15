@@ -31,6 +31,10 @@
             .url = "https://pkg.machengine.org/mach-glfw/fb4ae48540454270ab969c8c645bbc6eff3c2dfb.tar.gz",
             .hash = "12201ae68707aefe54ffb9d8c64721d4a2ac36186f8bd390e4f670033fec6737664a",
         },
+        .@"zig-ui" = .{
+            .url = "zig-ui/",
+            .hash = "122020132d4851aa4c2086cdf8eda0a2d637986021530031999e13c6a82c778eb70a",
+        },
     },
     .paths = .{
         "build.zig",
