@@ -1,4 +1,3 @@
-const glfw = @import("glfw");
 const std = @import("std");
 const ui = @import("ui/ui.zig");
 const Window = @import("Window.zig");

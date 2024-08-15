@@ -28,6 +28,7 @@ pub fn build(b: *std.Build) void {
     exe.linkSystemLibrary("GL");
     exe.linkSystemLibrary("cairo");
     exe.linkSystemLibrary("freetype");
+    exe.linkSystemLibrary("fontconfig");
     exe.linkLibC();
 
     const abi_module = b.createModule(.{
@@ -91,6 +92,7 @@ pub fn build(b: *std.Build) void {
 
     exe_unit_tests.linkSystemLibrary("cairo");
     exe_unit_tests.linkSystemLibrary("freetype");
+    exe_unit_tests.linkSystemLibrary("fontconfig");
     exe_unit_tests.linkLibC();
 
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
