@@ -10,11 +10,6 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe.linkSystemLibrary("glfw3");
-    exe.linkSystemLibrary("GL");
-    exe.linkSystemLibrary("cairo");
-    exe.linkSystemLibrary("freetype");
-    exe.linkSystemLibrary("fontconfig");
     exe.linkLibC();
 
     const glfw_dep = b.dependency("mach_glfw", .{
@@ -32,9 +27,6 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize, 
     });
-    for(zig_ui_bindings.builder.modules.keys()) |module| {
-        std.debug.print("{?}\n",  .{zig_ui_bindings.builder.modules.get(module)});
-    }
 
     // ./generator gl 4.1 core ARB_multi_bind
 
