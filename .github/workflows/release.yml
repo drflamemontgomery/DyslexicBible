@@ -27,6 +27,7 @@ jobs:
 
       - name: Build Project Tests
         run: |
+          zig fetch --save ./zig-ui
           zig build --fetch
           zig build test
   build:
@@ -44,5 +45,6 @@ jobs:
 
       - name: Build Project
         run: |
+          zig fetch --save ./zig-ui
           zig build --fetch
           zig build
